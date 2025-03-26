@@ -1,0 +1,358 @@
+---
+title: "Introduction to MSI"
+subtitle: "NatCap TEEMs Skill Session"
+author: 
+    name: Matt Braaksma
+    affiliations: University of Minnesota
+date: 03/24/2025
+date-format: long
+format: 
+    clean-revealjs:
+        embed-resources: true
+        incremental: false
+        title-slide-attributes: 
+            data-background-image: assets/UMN9_M-1line-blk.png
+            data-background-size: 25%
+            data-background-position: 4% 97%
+        html-math-method: katex
+        scrollable: true
+execute:
+    echo: true
+    eval: false
+    # cache: true
+---
+
+## What is MSI? 
+
+**Minnesota Supercomputing Institute**
+
+- Heterogeneous high-performance Linux cluster
+- CPU Compute Nodes
+  - 244 nodes have 512 GB of memory
+  - 100 have 2TB of memory
+- GPU Compute Nodes
+  - 50 nodes have 4 A100 GPUs connected via NVLink and 512 GB of memory
+  - 8 nodes have 8 A100s and 1 TB of memory
+- More details at [MSI website](https://msi.umn.edu/about-msi-services/high-performance-computing/agate)
+
+## What is HPC?
+
+![A conceptual depiction of a modern node with four eight-core processors that share a common memory pool. A node typically also handles local storage, network connectivity, and power. It is increasingly common for nodes to include special accelerator hardware like GPUs or TPUs. This node has a GPU.^[https://cvw.cac.cornell.edu/parallel/hpc/nodes]](assets/modern_node.gif)
+
+---
+
+## HPC vs. Regular Computing  
+
+| Feature         | HPC                           | Regular Computing         |  
+|---------------|-----------------------------|-------------------------|  
+| Processing Power | Many CPUs & GPUs across nodes | One or few CPUs with multiple cores |  
+| Parallelism      | Massively parallel (distributed computing) | Limited parallelism (multi-threading within a CPU) |  
+| Scalability      | High (thousands of nodes) | Low (single machine or few nodes) |  
+| Job Scheduling  | **Slurm**, PBS, or LSF for batch scheduling | OS task scheduler (e.g., Windows Task Manager, cron) |  
+
+- More about [Slurm](https://slurm.schedmd.com/documentation.html)
+
+---
+
+## Background
+### Command Line Basics
+- Common Linux commands:
+  - `ls` - List files
+  - `cd` - Change directory
+  - `pwd` - print working directory
+  - `mkdir` - Create a directory
+  - `mv` - move files
+  - `rm` - Remove files
+- [The Linux command line for beginners](https://ubuntu.com/tutorials/command-line-for-beginners#1-overview)
+
+---
+
+# Getting Set Up
+
+---
+
+## Getting Set Up
+### Connect to MSI
+
+1. Use Command Line
+
+    - Terminal (Mac/Unix)
+    - PuTTy (Windows)  
+        - [How do I configure PuTTy to connect to MSI Unix systems?](https://msi.umn.edu/our-resources/knowledge-base/interactive-connections-faqs/how-do-i-configure-putty-connect-msi-unix-systems)
+
+2. Use VS Code
+
+    - Much easier for editing code
+    - Requires the Remote - SSH extension  
+        - Ctrl/Cmd+Shift+P  
+        - "Remote-SSH: Connect to Host..."
+
+---
+
+## Getting Set Up
+### Connect to MSI
+
+***NOTE:***
+
+- Connecting to MSI requires
+  1. UMN account and invite to group 
+    - Let me know if you did not receive an email
+  2. Access to UMN network via 
+    - UMN WiFi 
+    - Using UMN's VPN when off campus
+    - [VPN guide from IT](https://it.umn.edu/services-technologies/virtual-private-network-vpn)
+
+---
+
+## Getting Set Up
+### VS Code
+
+Open the Command Palette (Ctrl/Cmd+Shift+P)
+![](assets/cmd_pallete.png)
+
+Add new host
+![](assets/remote_host_1.png)
+
+---
+
+## Getting Set Up
+### VS Code
+
+Use `ssh` to connect to MSI
+![](assets/remote_host_2.png)
+
+  - `ssh username@mangi.msi.umn.edu`
+  - Enter your password and complete 2FA
+
+---
+
+## Getting Set Up
+### VS Code
+
+Now use VS Code to view your directory
+![](assets/explorer_1.png)
+
+---
+
+## Getting Set Up
+### VS Code
+
+Now use VS Code to view your directory
+![](assets/explorer_2.png)
+
+  - For code, you can git clone directly into MSI
+
+---
+
+
+## Getting Set Up
+### Transfer Data to MSI
+
+Windows
+
+- [Using WinSCP to transfer data](https://msi.umn.edu/our-resources/knowledge-base/file-transfer-faqs/how-do-i-use-winscp-transfer-data)
+
+Mac
+
+- [Using FileZilla to transfer data](https://msi.umn.edu/our-resources/knowledge-base/file-transfer-faqs/how-do-i-use-filezilla-transfer-data)
+
+In the future...
+
+- [Second Tier Storage via S3](https://msi.umn.edu/our-resources/knowledge-base/data-storage-faqs/what-are-some-user-friendly-ways-use-second-tier-storage-s3)
+- Cyberduck (for Windows and Mac)
+- [What are some user-friendly ways to use Second Tier Storage via S3?](https://msi.umn.edu/our-resources/knowledge-base/data-storage-faqs/what-are-some-user-friendly-ways-use-second-tier-storage-s3)
+
+---
+
+## Walkthrough
+### Submitting a job
+
+1. Set up conda environment
+2. Git clone: `https://github.com/SumilThakr/luep`
+3. Transfer data 
+4. Update python code 
+5. Create job script (.sh)
+6. Submit sbatch
+
+---
+
+## Walkthrough
+### Set up conda environment
+
+Go to bash:
+```{zsh}
+module load conda
+conda create -n teems01 python=3 # create new venv
+conda activate teems01 # or activate if already created
+conda install -c conda-forge pyproj xarray rasterio pygeoprocessing scipy netCDF4 
+# install any necessary modules
+```
+
+---
+
+## Walkthrough
+### Git clone
+
+Git clone to MSI (Ctrl/Cmd+Shift+P)
+```{zsh}
+git clone https://github.com/SumilThakr/luep.git
+```
+
+
+---
+
+## Walkthrough
+### Transfer data 
+
+- Use FileZilla or WinSCP to transfer data
+- From Google Drive:
+  - Should be able to use [rclone](https://msi.umn.edu/our-resources/knowledge-base/data-storage-faqs/how-do-i-transfer-data-google-drive-panasas-tier-1-storage) to transfer data directly 
+  - '.../NatCapTEEMs/Files/base_data/submissions/air_quality'
+  - Otherwise, copy to local machine first, then transfer
+- To your MSI dir:
+  - '~/Files/natcap_teems/skill_session_msi/'
+
+---
+
+## Walkthrough
+### Update python code
+
+- Open `run_deposition_calculation.py`
+- Change inputdir
+- Comment out some lines
+  - Optional: add timer
+
+---
+
+## Walkthrough
+### Update python
+
+```{.python code-line-numbers="10"}
+# run_deposition_calculation.py
+from dep_scripts import dep_1_lai_reclass
+from dep_scripts import dep_2_lai_month_avg
+from dep_scripts import dep_3_velocity
+from dep_scripts import dep_4_multiply
+import time
+
+# inputdir = "/Users/sumilthakrar/UMN/Projects/landd2/pkg" # sumil local
+# inputdir = "G:/Shared drives/NatCapTEEMs/Files/base_data/submissions/air_quality" # teems drive
+inputdir = "~/Files/natcap_teems/skill_session_msi/air_quality"
+
+def main():
+    start_time = time.time()
+
+    print("Reclassifying leaf area index")
+    dep_1_lai_reclass.run(inputdir)
+    print("Completed.\n")
+
+    duration = time.time() - start_time
+    print(f"Duration: {duration:.4f} seconds")
+
+if __name__ == '__main__':
+    main()
+```
+
+--- 
+
+## Walkthrough
+### Job Submission and Scheduling with Slurm
+- **MSI uses Slurm** to manage computational resources efficiently.  
+- Jobs are submitted to a **queue (partition)** and wait for available resources.  
+- Users must create **Slurm job scripts** to request resources and execute calculations.  
+
+### Writing and Submitting Job Scripts
+1. **Writing Job Scripts** – Define resource requests and execution commands.  
+2. **Submitting Job Scripts** – Use `sbatch` to submit jobs to Slurm.  
+3. **Slurm Directives** – Specify job parameters with `#SBATCH` directives.  
+
+--- 
+
+## Walkthrough
+### Create job script (.sh)
+
+```{python}
+#!/bin/bash -l        
+# Specifies the shell to use for the script (bash in this case), and the -l option makes it a login shell
+
+# Slurm directives to request resources
+#SBATCH --time=0:10:00  # Set the maximum runtime for the job to 10 minutes
+#SBATCH --ntasks=1      # Request 1 task (process) for this job
+#SBATCH --mem=10g       # Request 10GB of RAM
+#SBATCH --tmp=10g       # Request 10GB of temporary (scratch) disk space
+#SBATCH --mail-type=ALL  # Receive emails on all events (start, end, fail)
+#SBATCH --mail-user=braak014@umn.edu  # Set email address to receive notifications
+
+# Change to the specified working directory
+cd ~/Files/natcap_teems/skill_session_msi/luep
+
+# Load the necessary software modules
+module load python3  # Load the Python 3 module
+module load conda    # Load the Conda module
+
+# Manually source the .bashrc file to initialize Conda
+source ~/.bashrc  # Ensures that Conda is properly initialized before use
+
+# Activate the Conda environment where dependencies are set up
+conda activate teems01  # Activate the Conda environment "teems01"
+
+# Run the Python script
+python3 run_deposition_calculation.py  # Executes the specified Python script using Python 3
+
+```
+
+--- 
+
+## Walkthrough
+### Submit sbatch
+
+```{bash}
+sbatch submit_run_deposition_calc.sh 
+squeue -u username # to check status of jobs
+# scancel jobIDnumber # to cancel a job
+```
+
+- Note: you need to be in the same dir
+  - Ex: (base) braak014@ahl01 [~/Files/natcap_teems/skill_session_msi/luep] % sbatch submit_run_deposition_calc.sh
+
+---
+
+## Walkthrough
+### Output
+
+File `slurm-33362574.out` saved to same dir
+```{bash}
+Reclassifying leaf area index
+Completed.
+
+Duration: 25.4040 seconds
+```
+
+Compared to local machine:
+```{bash}
+Reclassifying leaf area index
+Completed.
+
+Duration: 45.3438 seconds
+```
+
+---
+
+## Next Steps & Other options
+
+- Set up complete devstack on MSI
+  - Transfer all base data
+  - Use Second Tier Storage
+
+- Gain experience with `srun` and [Interactive Job Support](https://msi.umn.edu/about-msi-services/interactive-hpc/interactive-computing-srun)
+  - Should be able to use debugging feature
+
+- Set up ssh config file to avoid repeated logins
+
+- Other Options
+  - [Open OnDemand](https://msi.umn.edu/about-msi-services/interactive-hpc/open-ondemand)
+  - Jupyter
+  - Rstudio servers
+
+---
+
